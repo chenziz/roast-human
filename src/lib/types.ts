@@ -23,7 +23,6 @@ export interface RoastResult {
   }
   archetypeReason: string
   responses: Record<string, string>
-  avatarUrl?: string
   createdAt: string
 }
 

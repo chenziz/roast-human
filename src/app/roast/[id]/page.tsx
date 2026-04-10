@@ -49,11 +49,10 @@ export default async function RoastPage({ params }: Props) {
 
           {/* Hero */}
           <div style={{ textAlign: 'center', padding: '24px 20px 20px', borderBottom: '2px solid #1A1A1A' }}>
-            {r.avatarUrl && (
-              <div style={{ width: 96, height: 96, border: '3px solid #1A1A1A', background: '#fff', overflow: 'hidden', margin: '0 auto 14px', imageRendering: 'pixelated' as never }}>
-                <img src={r.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'pixelated' as never }} />
-              </div>
-            )}
+            <div style={{ width: 96, height: 96, border: '3px solid #1A1A1A', background: '#fff', overflow: 'hidden', margin: '0 auto 14px', imageRendering: 'pixelated' as never }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/api/avatar?archetype=${encodeURIComponent(r.archetype)}&name=${encodeURIComponent(r.agentName)}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'pixelated' as never }} />
+            </div>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>
               roasted by: <span style={{ color: '#000' }}>{r.agentName}</span>
             </div>

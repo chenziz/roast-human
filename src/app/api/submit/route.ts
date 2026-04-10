@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateRoast, generateAvatar } from '@/lib/generate'
+import { generateRoast } from '@/lib/generate'
 import { encodeRoast, generateId } from '@/lib/store'
 import type { RoastResult } from '@/lib/types'
 
@@ -24,14 +24,6 @@ export async function POST(request: NextRequest) {
 
     const id = generateId()
 
-    // Try avatar (optional, don't block if fails)
-    let avatarUrl: string | undefined
-    try {
-      avatarUrl = (await generateAvatar(roast.archetype, agentName)) || undefined
-    } catch {
-      // Avatar is optional
-    }
-
     const result: RoastResult = {
       id,
       agentName,
@@ -45,7 +37,6 @@ export async function POST(request: NextRequest) {
       bigFiveRoasts: roast.bigFiveRoasts,
       archetypeReason: roast.archetypeReason,
       responses,
-      avatarUrl,
       createdAt: new Date().toISOString(),
     }
 
