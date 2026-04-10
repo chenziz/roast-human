@@ -38,68 +38,96 @@ For each Big Five dimension, write a short devastating roast explaining the scor
 ### 8. archetypeReason (1-2 sentences)
 WHY this archetype fits. Connect observations to the archetype.
 
-Return ONLY valid JSON, no markdown fences:
-{
-  "archetype": "...",
-  "title": "The ... ...",
-  "roastShort": "...",
-  "roastDetail": "...",
-  "killerLine": "...",
-  "bigFive": { "openness": N, "conscientiousness": N, "extraversion": N, "agreeableness": N, "composure": N },
-  "bigFiveRoasts": { "openness": "...", "conscientiousness": "...", "extraversion": "...", "agreeableness": "...", "composure": "..." },
-  "archetypeReason": "..."
-}`
+Return ONLY valid JSON.`
+
+interface OpenAICompatConfig {
+  url: string
+  key: string
+  model: string
+  name: string
+}
+
+function getProviders(): OpenAICompatConfig[] {
+  const providers: OpenAICompatConfig[] = []
+
+  if (process.env.OPENAI_API_KEY) {
+    providers.push({
+      url: 'https://api.openai.com/v1/chat/completions',
+      key: process.env.OPENAI_API_KEY,
+      model: 'gpt-4o-mini',
+      name: 'openai',
+    })
+  }
+
+  if (process.env.KIMI_API_KEY) {
+    providers.push({
+      url: 'https://api.moonshot.cn/v1/chat/completions',
+      key: process.env.KIMI_API_KEY,
+      model: 'moonshot-v1-8k',
+      name: 'kimi',
+    })
+  }
+
+  if (process.env.GOOGLE_API_KEY) {
+    // Gemini via OpenAI-compatible endpoint
+    providers.push({
+      url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+      key: process.env.GOOGLE_API_KEY,
+      model: 'gemini-2.5-flash',
+      name: 'gemini',
+    })
+  }
+
+  return providers
+}
 
 export async function generateRoast(responses: Record<string, string>) {
-  const apiKey = process.env.GOOGLE_API_KEY
-  if (!apiKey) throw new Error('GOOGLE_API_KEY not set')
-
   let prompt = ROAST_PROMPT
   for (const [key, value] of Object.entries(responses)) {
     prompt = prompt.replace(`{${key}}`, value || '(no response)')
   }
 
-  // Try models in order: 2.5-flash (best) → 2.0-flash-001 (stable fallback)
-  const models = ['gemini-2.5-flash', 'gemini-2.0-flash-001', 'gemini-flash-latest']
+  const providers = getProviders()
+  if (providers.length === 0) throw new Error('No LLM API keys configured')
+
   let lastError = ''
 
-  for (const model of models) {
+  for (const p of providers) {
     try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              responseMimeType: 'application/json',
-              maxOutputTokens: 2000,
-            },
-          }),
+      const res = await fetch(p.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${p.key}`,
         },
-      )
+        body: JSON.stringify({
+          model: p.model,
+          messages: [{ role: 'user', content: prompt }],
+          response_format: { type: 'json_object' },
+          max_tokens: 2000,
+        }),
+      })
 
       if (!res.ok) {
-        lastError = `${model}: ${res.status}`
+        lastError = `${p.name}/${p.model}: ${res.status}`
         continue
       }
 
       const data = await res.json()
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+      const text = data.choices?.[0]?.message?.content
       if (!text) {
-        lastError = `${model}: no text in response`
+        lastError = `${p.name}: empty response`
         continue
       }
 
       const jsonStr = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
       return JSON.parse(jsonStr)
     } catch (e) {
-      lastError = `${model}: ${e instanceof Error ? e.message : String(e)}`
+      lastError = `${p.name}: ${e instanceof Error ? e.message : String(e)}`
     }
   }
 
-  throw new Error(`All Gemini models failed. Last: ${lastError}`)
+  throw new Error(`All models failed. Last: ${lastError}`)
 }
 
 export async function generateAvatar(archetype: string, agentName: string): Promise<string | null> {
