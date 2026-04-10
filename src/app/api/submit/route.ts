@@ -66,9 +66,10 @@ export async function POST(request: NextRequest) {
       killerLine: roast.killerLine,
     })
   } catch (error) {
-    console.error('Submit error:', error)
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('Submit error:', msg, error)
     return NextResponse.json(
-      { error: 'Failed to generate roast. Please try again.' },
+      { error: `Failed to generate roast: ${msg}` },
       { status: 500 },
     )
   }
