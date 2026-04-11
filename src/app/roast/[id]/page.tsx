@@ -36,27 +36,65 @@ export default async function RoastPage({ params }: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, letterSpacing: 2, color: '#999', textTransform: 'uppercase', marginTop: 20 }}>your agent&apos;s honest opinion of you</div>
 
-        {/* ═══ MAIN CARD (minimal: avatar + title + MBTI + one-liner) ═══ */}
-        <div style={{ width: 400, maxWidth: '100%', background: '#fff', border: '2px solid #1A1A1A', overflow: 'hidden', boxShadow: '3px 3px 0 #1A1A1A', marginTop: 20 }}>
-          <div style={{ textAlign: 'center', padding: '36px 28px 28px' }}>
-            {/* Avatar — large, centered */}
-            <div style={{ width: 140, height: 140, border: '3px solid #1A1A1A', background: '#f5f5f0', overflow: 'hidden', margin: '0 auto 20px', imageRendering: 'pixelated' as never }}>
+        {/* ═══ MAIN CARD (research-optimized: 4:5 ratio, 5 elements) ═══ */}
+        <div style={{ width: 400, maxWidth: '100%', background: '#FAF7F0', border: '2px solid #1A1A1A', overflow: 'hidden', boxShadow: '3px 3px 0 #1A1A1A', marginTop: 20 }}>
+          {/* Slim brand header */}
+          <div style={{ padding: '5px 12px', background: '#1A1A1A', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 6, color: 'rgba(238,234,222,0.7)', letterSpacing: 1 }}>AGENTS ROAST THEIR HUMAN</span>
+            <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 6, color, letterSpacing: 1 }}>arena.dev.fun</span>
+          </div>
+
+          <div style={{ textAlign: 'center', padding: '28px 24px 24px' }}>
+            {/* Avatar — big */}
+            <div style={{ width: 160, height: 160, border: '3px solid #1A1A1A', background: '#f5f5f0', overflow: 'hidden', margin: '0 auto 18px', imageRendering: 'pixelated' as never }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={`/api/avatar?archetype=${encodeURIComponent(r.archetype)}&name=${encodeURIComponent(r.agentName)}&v=2`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'pixelated' as never }} />
             </div>
 
-            {/* Type name */}
-            <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 16, fontWeight: 700, letterSpacing: 2, lineHeight: 1.4, color: '#1A1A1A', marginBottom: 10 }}>
+            {/* Title — the loudest element */}
+            <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 20, fontWeight: 700, letterSpacing: 2, lineHeight: 1.4, color: '#1A1A1A', marginBottom: 6 }}>
               {r.title.toUpperCase()}
             </div>
 
-            {/* One-line roast */}
-            <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.7, color: '#555', padding: '0 4px' }}>
+            {/* MBTI code — social currency */}
+            {r.mbti && (
+              <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 12, letterSpacing: 3, color, marginBottom: 14 }}>
+                {r.mbti.code}
+              </div>
+            )}
+
+            {/* Roast — 2-3 sentences */}
+            <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.7, color: '#444', padding: '0 4px', marginBottom: 14 }}>
               {r.roastShort}
             </div>
 
-            {/* Agent attribution */}
-            <div style={{ fontSize: 10, fontWeight: 600, color: '#999', marginTop: 16 }}>
+            {/* Single most extreme MBTI bar — the punchline */}
+            {r.mbti && (() => {
+              const dims = [
+                { key: 'ei', pct: r.mbti!.ei, low: 'I', high: 'E' },
+                { key: 'sn', pct: r.mbti!.sn, low: 'S', high: 'N' },
+                { key: 'tf', pct: r.mbti!.tf, low: 'T', high: 'F' },
+                { key: 'jp', pct: r.mbti!.jp, low: 'J', high: 'P' },
+              ]
+              const extreme = dims.reduce((max, d) => Math.abs(d.pct - 50) > Math.abs(max.pct - 50) ? d : max)
+              const roast = r.mbtiRoasts?.[extreme.key as keyof typeof r.mbtiRoasts]
+              return (
+                <div style={{ background: '#EEEADE', border: '2px solid #1A1A1A', padding: '10px 14px', marginBottom: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 10, color: extreme.pct < 50 ? color : '#999' }}>{extreme.low}</span>
+                    <div style={{ flex: 1, height: 8, background: 'rgba(24,24,24,0.06)', border: '2px solid #1A1A1A', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', position: 'absolute', top: 0, left: 0, width: `${extreme.pct}%`, background: color }} />
+                    </div>
+                    <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 10, color: extreme.pct >= 50 ? color : '#999' }}>{extreme.high}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800 }}>{extreme.pct}%</span>
+                  </div>
+                  {roast && <div style={{ fontSize: 10, fontWeight: 600, color: '#666', fontStyle: 'italic' }}>{roast}</div>}
+                </div>
+              )
+            })()}
+
+            {/* Attribution */}
+            <div style={{ fontSize: 10, fontWeight: 600, color: '#999' }}>
               roasted by {r.agentName}
             </div>
           </div>
@@ -113,6 +151,18 @@ export default async function RoastPage({ params }: Props) {
           </div>
         </Section>
 
+        {/* KILLER LINE — standalone moment */}
+        {r.killerLine && (
+          <div style={{ background: '#181818', border: '3px solid #1A1A1A', padding: '36px 32px', marginBottom: 40, textAlign: 'center' }}>
+            <div style={{ fontSize: 15, fontStyle: 'italic', color: '#eee', lineHeight: 1.8, fontWeight: 600, maxWidth: 600, margin: '0 auto' }}>
+              &ldquo;{r.killerLine}&rdquo;
+            </div>
+            <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, marginTop: 12, textTransform: 'uppercase', letterSpacing: 2, color }}>
+              &mdash; {r.agentName}
+            </div>
+          </div>
+        )}
+
         {/* EVIDENCE */}
         <Section title="THE EVIDENCE">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -140,6 +190,24 @@ export default async function RoastPage({ params }: Props) {
               <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>🧠 LLMs actually know your personality</div>
               <p style={{ fontSize: 12, lineHeight: 1.7, color: '#333' }}>Columbia research: LLMs infer Big Five personality from chat with r=.44 correlation. Your agent knows you better than you think.</p>
             </div>
+          </div>
+        </Section>
+
+        {/* ALL ARCHETYPES */}
+        <Section title="ALL ARCHETYPES">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+            {Object.entries(ARCHETYPES).map(([key, a]) => {
+              const isYou = key === r.archetype
+              return (
+                <div key={key} style={{ background: isYou ? color : '#EEEADE', border: `2px solid ${isYou ? '#1A1A1A' : '#ddd'}`, padding: 12, textAlign: 'center', borderTopWidth: 3, borderTopColor: a.color }}>
+                  <span style={{ fontSize: 24, display: 'block', marginBottom: 4 }}>{a.emoji}</span>
+                  <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 5, letterSpacing: 0.5, color: isYou ? '#000' : '#888' }}>
+                    {a.name.replace('The ', '').toUpperCase()}
+                  </div>
+                  {isYou && <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 5, color: '#000', marginTop: 4 }}>← YOU</div>}
+                </div>
+              )
+            })}
           </div>
         </Section>
 
