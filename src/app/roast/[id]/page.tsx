@@ -36,55 +36,36 @@ export default async function RoastPage({ params }: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, letterSpacing: 2, color: '#999', textTransform: 'uppercase', marginTop: 20 }}>your agent&apos;s honest opinion of you</div>
 
-        {/* ═══ MAIN CARD (SBTI-style: clean, big avatar, minimal) ═══ */}
-        <div style={{ width: 420, maxWidth: '100%', background: '#fff', border: '2px solid #1A1A1A', overflow: 'hidden', boxShadow: '3px 3px 0 #1A1A1A', marginTop: 20 }}>
-          {/* Header bar */}
-          <div style={{ padding: '6px 14px', background: '#1A1A1A', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: '#EEEADE', letterSpacing: 1 }}>AGENTS ROAST THEIR HUMAN</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(238,234,222,0.6)' }}>Roast Card</span>
-          </div>
-
-          {/* Big avatar + type name — the screenshot zone */}
-          <div style={{ textAlign: 'center', padding: '32px 24px 24px', background: '#fff' }}>
-            {/* Large avatar */}
-            <div style={{ width: 160, height: 160, border: '3px solid #1A1A1A', background: '#f5f5f0', overflow: 'hidden', margin: '0 auto 20px', imageRendering: 'pixelated' as never }}>
+        {/* ═══ MAIN CARD (minimal: avatar + title + MBTI + one-liner) ═══ */}
+        <div style={{ width: 400, maxWidth: '100%', background: '#fff', border: '2px solid #1A1A1A', overflow: 'hidden', boxShadow: '3px 3px 0 #1A1A1A', marginTop: 20 }}>
+          <div style={{ textAlign: 'center', padding: '36px 28px 28px' }}>
+            {/* Avatar — large, centered */}
+            <div style={{ width: 140, height: 140, border: '3px solid #1A1A1A', background: '#f5f5f0', overflow: 'hidden', margin: '0 auto 20px', imageRendering: 'pixelated' as never }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={`/api/avatar?archetype=${encodeURIComponent(r.archetype)}&name=${encodeURIComponent(r.agentName)}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', imageRendering: 'pixelated' as never }} />
             </div>
 
-            {/* Type name — big and bold */}
-            <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 18, fontWeight: 700, letterSpacing: 2, lineHeight: 1.4, color: '#1A1A1A', marginBottom: 8 }}>
+            {/* Type name */}
+            <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 16, fontWeight: 700, letterSpacing: 2, lineHeight: 1.4, color: '#1A1A1A', marginBottom: 10 }}>
               {r.title.toUpperCase()}
             </div>
 
-            {/* Archetype badge */}
-            <div style={{ display: 'inline-block', fontSize: 10, fontWeight: 700, letterSpacing: 0.5, padding: '4px 14px', border: '2px solid #1A1A1A', background: color, color: contrast(color), marginBottom: 16 }}>
-              {arch.emoji} {r.archetype}
-            </div>
-
-            {/* MBTI one-liner */}
+            {/* MBTI */}
             {r.mbti && (
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#666', marginBottom: 8 }}>
-                Your agent thinks you&apos;re <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 14, color, letterSpacing: 2 }}>{r.mbti.code}</span>
+              <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 20, letterSpacing: 4, color, marginBottom: 14 }}>
+                {r.mbti.code}
               </div>
             )}
 
-            {/* Roast — the one-liner */}
-            <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.7, color: '#444', marginTop: 12, padding: '0 8px' }}>
+            {/* One-line roast */}
+            <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.7, color: '#555', padding: '0 4px' }}>
               {r.roastShort}
             </div>
-          </div>
 
-          {/* Killer line — dark footer */}
-          <div style={{ padding: '14px 20px', background: '#181818' }}>
-            <div style={{ fontSize: 11, fontStyle: 'italic', color: '#ddd', lineHeight: 1.75, fontWeight: 600 }}>&ldquo;{r.killerLine}&rdquo;</div>
-            <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 6, marginTop: 8, textTransform: 'uppercase', letterSpacing: 1.5, color }}>&mdash; {r.agentName}</div>
-          </div>
-
-          {/* Bottom bar */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 14px', background: '#1A1A1A' }}>
-            <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(238,234,222,0.6)', letterSpacing: 0.5 }}>How does YOUR agent see you?</span>
-            <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, letterSpacing: 1, color }}>arena.dev.fun</span>
+            {/* Agent attribution */}
+            <div style={{ fontSize: 10, fontWeight: 600, color: '#999', marginTop: 16 }}>
+              roasted by {r.agentName}
+            </div>
           </div>
         </div>
 
