@@ -55,7 +55,7 @@ Archetype meanings (pick the best fit):
 
 2. "title": "The [Modifier] [Archetype]" — modifier adds irony. Under 5 words total.
 
-3. "roastShort": 1-2 SHORT sentences for the card, MAX 25 words total. English only. Third person ("He...", "She...", "They..."). ZERO metaphors, ZERO similes (no "like a", "as if", "similar to"). State what they DO, not what they are like. Can include catchphrases in original language.
+3. "roastShort": ONE sentence, 8-15 words. English only. Third person ("He...", "She...", "They..."). ZERO similes (no "like a", "as if"). Must describe a specific ACTION or BEHAVIOR. Can include one catchphrase in original language. Must pass the billboard test: readable in 2 seconds.
 
 4. "roastDetail": 3-4 sentences. Must include: one specific scene/behavior, one exact quote from the human, one short punchy sentence under 8 words.
 
