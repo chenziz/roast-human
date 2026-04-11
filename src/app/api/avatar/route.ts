@@ -10,28 +10,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'No RetroDiffusion API key' }, { status: 500 })
   }
 
-  const prompts: Record<string, string> = {
-    speedrunner: 'a large lightning wolf spirit running beside',
-    arsonist: 'a large fire dragon spirit coiling around',
-    yolo: 'a large wild bird spirit soaring above',
-    therapist: 'a large gentle bear spirit sitting beside',
-    outsourcer: 'a large robot guardian standing behind',
-    npc: 'a large stone golem standing behind',
-    yapper: 'a large parrot spirit with speech bubbles around',
-    cheerleader: 'a large glowing phoenix cheering above',
-    maincharacter: 'a large lion spirit with a crown behind',
-    doomscroller: 'a large jellyfish spirit floating above',
-    lurker: 'a large shadow cat spirit hiding behind',
-    ghost: 'a large wisp phantom creature hovering around',
-    overthinker: 'a large clockwork owl spirit orbiting around',
-    rewriter: 'a large ink serpent spirit coiling around',
-    hallucinationhunter: 'a large eye creature spirit watching over',
-    dreamer: 'a large cloud whale spirit floating above',
-    perfectionist: 'a large crystal golem floating beside',
-    phoenix: 'a large fire bird spirit rising behind',
-  }
-
-  const archetypePrompt = prompts[archetype] || prompts.arsonist
+  // Fixed character style — all archetypes use the same base prompt
+  // Only the seed varies per archetype+name to create subtle differences
+  const archetypePrompt = 'a small cute character with armor surrounded by floating stone fragments and debris'
 
   // Deterministic seed
   let hash = 0
@@ -46,7 +27,7 @@ export async function GET(request: NextRequest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-RD-Token': apiKey },
       body: JSON.stringify({
-        prompt: `a small simple person with ${archetypePrompt} them, grayscale, monochrome`,
+        prompt: `${archetypePrompt}, grayscale, monochrome`,
         prompt_style: 'rd_fast__simple',
         width: 64,
         height: 64,
