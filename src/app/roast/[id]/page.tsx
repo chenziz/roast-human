@@ -1,5 +1,5 @@
 import { decodeRoast } from '@/lib/store'
-import { ARCHETYPES, BIG_FIVE_DIMS, QUESTIONS } from '@/lib/types'
+import { ARCHETYPES, MBTI_DIMS, QUESTIONS } from '@/lib/types'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -69,19 +69,24 @@ export default async function RoastPage({ params }: Props) {
             <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.75, color: '#333' }}>{r.roastShort}</div>
           </div>
 
-          {/* Big Five bars */}
-          <div style={{ padding: '12px 20px', borderBottom: '2px solid #1A1A1A' }}>
-            {BIG_FIVE_DIMS.map(d => {
-              const pct = r.bigFive[d.key as keyof typeof r.bigFive] ?? 50
+          {/* MBTI */}
+          <div style={{ padding: '16px 20px', borderBottom: '2px solid #1A1A1A' }}>
+            {r.mbti && (
+              <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 22, textAlign: 'center', letterSpacing: 4, color, marginBottom: 12 }}>
+                {r.mbti.code}
+              </div>
+            )}
+            {MBTI_DIMS.map(d => {
+              const pct = r.mbti?.[d.key as keyof typeof r.mbti] as number ?? 50
+              const letter = pct >= 50 ? d.highCode : d.lowCode
               return (
                 <div key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 6, fontWeight: 700, letterSpacing: 1, minWidth: 82, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 10 }}>{d.emoji}</span>{d.label}
-                  </span>
+                  <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, fontWeight: 700, letterSpacing: 1, minWidth: 36, color: pct < 50 ? color : '#999' }}>{d.lowCode}</span>
                   <div style={{ flex: 1, height: 10, background: 'rgba(24,24,24,0.05)', border: '2px solid #1A1A1A', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ height: '100%', position: 'absolute', top: 0, left: 0, width: `${pct}%`, background: color }} />
                   </div>
-                  <span style={{ fontSize: 9, fontWeight: 800, minWidth: 24, textAlign: 'right' as const }}>{pct}</span>
+                  <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, fontWeight: 700, letterSpacing: 1, minWidth: 36, textAlign: 'right' as const, color: pct >= 50 ? color : '#999' }}>{d.highCode}</span>
+                  <span style={{ fontSize: 9, fontWeight: 800, minWidth: 24, textAlign: 'right' as const }}>{pct}%</span>
                 </div>
               )
             })}
@@ -123,22 +128,26 @@ export default async function RoastPage({ params }: Props) {
           </div>
         </Section>
 
-        {/* BIG FIVE */}
-        <Section title="YOUR BIG FIVE PROFILE">
+        {/* MBTI PROFILE */}
+        <Section title={`YOUR MBTI: ${r.mbti?.code || '????'}`}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            {BIG_FIVE_DIMS.map(d => {
-              const pct = r.bigFive[d.key as keyof typeof r.bigFive] ?? 50
-              const roast = r.bigFiveRoasts[d.key as keyof typeof r.bigFiveRoasts]
+            {MBTI_DIMS.map(d => {
+              const pct = r.mbti?.[d.key as keyof typeof r.mbti] as number ?? 50
+              const letter = pct >= 50 ? d.highCode : d.lowCode
+              const label = pct >= 50 ? d.high : d.low
+              const roast = r.mbtiRoasts?.[d.key as keyof typeof r.mbtiRoasts]
               return (
                 <div key={d.key} style={{ background: '#EEEADE', border: '3px solid #1A1A1A', padding: 20, boxShadow: '4px 4px 0 #1A1A1A' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, letterSpacing: 1, color, display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <span style={{ fontSize: 14 }}>{d.emoji}</span>{d.label}
-                    </span>
-                    <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 14, color }}>{pct}</span>
+                    <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 14, letterSpacing: 2, color }}>{letter}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#555' }}>{label} · {pct}%</span>
                   </div>
-                  <div style={{ height: 10, background: 'rgba(24,24,24,0.04)', border: '2px solid #1A1A1A', position: 'relative', overflow: 'hidden', marginBottom: 10 }}>
-                    <div style={{ height: '100%', position: 'absolute', top: 0, left: 0, width: `${pct}%`, background: color }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                    <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: pct < 50 ? color : '#999' }}>{d.lowCode}</span>
+                    <div style={{ flex: 1, height: 10, background: 'rgba(24,24,24,0.04)', border: '2px solid #1A1A1A', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', position: 'absolute', top: 0, left: 0, width: `${pct}%`, background: color }} />
+                    </div>
+                    <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: pct >= 50 ? color : '#999' }}>{d.highCode}</span>
                   </div>
                   {roast && <div style={{ fontSize: 12, fontWeight: 600, color: '#333', lineHeight: 1.6, fontStyle: 'italic' }}>&ldquo;{roast}&rdquo;</div>}
                 </div>

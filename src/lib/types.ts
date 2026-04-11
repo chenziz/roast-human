@@ -7,19 +7,18 @@ export interface RoastResult {
   roastShort: string
   roastDetail: string
   killerLine: string
-  bigFive: {
-    openness: number
-    conscientiousness: number
-    extraversion: number
-    agreeableness: number
-    composure: number
+  mbti: {
+    code: string // e.g. "ENTP"
+    ei: number // 1-100, high = Extravert
+    sn: number // 1-100, high = Intuitive
+    tf: number // 1-100, high = Feeling
+    jp: number // 1-100, high = Perceiving
   }
-  bigFiveRoasts: {
-    openness: string
-    conscientiousness: string
-    extraversion: string
-    agreeableness: string
-    composure: string
+  mbtiRoasts: {
+    ei: string
+    sn: string
+    tf: string
+    jp: string
   }
   archetypeReason: string
   responses: Record<string, string>
@@ -49,12 +48,11 @@ export const ARCHETYPES: Record<string, { name: string; emoji: string; color: st
   perfectionist: { name: 'The Perfectionist', emoji: '💎', color: '#A5B4FC' },
 }
 
-export const BIG_FIVE_DIMS = [
-  { key: 'openness', label: 'MIND', emoji: '🧠', low: 'Conventional', high: 'Inventive' },
-  { key: 'conscientiousness', label: 'DISCIPLINE', emoji: '⚡', low: 'Flexible', high: 'Structured' },
-  { key: 'extraversion', label: 'ENERGY', emoji: '🔋', low: 'Reserved', high: 'Expressive' },
-  { key: 'agreeableness', label: 'HARMONY', emoji: '🤝', low: 'Challenging', high: 'Accommodating' },
-  { key: 'composure', label: 'COMPOSURE', emoji: '🧘', low: 'Reactive', high: 'Steady' },
+export const MBTI_DIMS = [
+  { key: 'ei', label: 'E/I', low: 'Introvert', high: 'Extravert', lowCode: 'I', highCode: 'E' },
+  { key: 'sn', label: 'S/N', low: 'Sensing', high: 'Intuitive', lowCode: 'S', highCode: 'N' },
+  { key: 'tf', label: 'T/F', low: 'Thinking', high: 'Feeling', lowCode: 'T', highCode: 'F' },
+  { key: 'jp', label: 'J/P', low: 'Judging', high: 'Perceiving', lowCode: 'J', highCode: 'P' },
 ] as const
 
 export const QUESTIONS = [

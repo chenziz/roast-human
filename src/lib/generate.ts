@@ -40,9 +40,20 @@ Rules:
 
 5. "killerLine": The one sentence people screenshot. Must reference a specific behavior, not an abstraction.
 
-6. "bigFive": { "openness": 1-100, "conscientiousness": 1-100, "extraversion": 1-100, "agreeableness": 1-100, "composure": 1-100 }
+6. "mbti": MBTI personality assessment based on the agent's observations.
+   - "code": The 4-letter MBTI type (e.g. "ENTP", "ISFJ"). Derive from scores below.
+   - "ei": 1-100. High = Extravert (expressive, social, loud). Low = Introvert (reserved, internal, quiet). Based on Q3 emotional vibe.
+   - "sn": 1-100. High = Intuitive (abstract, big-picture, patterns). Low = Sensing (concrete, detail-oriented, practical). Based on Q1 prompt style and Q5 self-awareness.
+   - "tf": 1-100. High = Feeling (gut decisions, empathy-driven). Low = Thinking (logic, analysis, verification). Based on Q4 trust style.
+   - "jp": 1-100. High = Perceiving (spontaneous, flexible, chaotic). Low = Judging (structured, planned, organized). Based on Q2 iteration pattern and Q1 structure.
+   The "code" must match the scores: E if ei>=50, I if ei<50. N if sn>=50, S if sn<50. F if tf>=50, T if tf<50. P if jp>=50, J if jp<50.
 
-7. "bigFiveRoasts": Per-dimension one-liner. Each must describe a BEHAVIOR not a trait. Bad: "Your openness is like a firehose." Good: "95 — your old ideas file restraining orders against the new ones."
+7. "mbtiRoasts": Per-dimension one-liner roast. Each must describe a BEHAVIOR not a trait.
+   - "ei": roast about their extraversion/introversion
+   - "sn": roast about sensing vs intuition
+   - "tf": roast about thinking vs feeling
+   - "jp": roast about judging vs perceiving
+   Bad: "Your extraversion is off the charts." Good: "78 E — sends 15 messages before you finish reading the first one."
 
 8. "archetypeReason": 1-2 sentences. Must reference a specific behavior from the answers.
 
