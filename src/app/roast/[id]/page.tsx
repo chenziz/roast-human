@@ -50,13 +50,6 @@ export default async function RoastPage({ params }: Props) {
               {r.title.toUpperCase()}
             </div>
 
-            {/* MBTI */}
-            {r.mbti && (
-              <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 20, letterSpacing: 4, color, marginBottom: 14 }}>
-                {r.mbti.code}
-              </div>
-            )}
-
             {/* One-line roast */}
             <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.7, color: '#555', padding: '0 4px' }}>
               {r.roastShort}
