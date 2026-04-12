@@ -1,5 +1,5 @@
 import { decodeRoast } from '@/lib/store'
-import { ARCHETYPES, AI_DIMS, QUESTIONS } from '@/lib/types'
+import { ARCHETYPES, AI_DIMS } from '@/lib/types'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -175,36 +175,6 @@ export default async function RoastPage({ params }: Props) {
             </div>
           </div>
         )}
-
-        {/* EVIDENCE */}
-        <Section title="THE EVIDENCE">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            {QUESTIONS.map((q, i) => (
-              <div key={q.id} style={{ background: '#EEEADE', border: '3px solid #1A1A1A', padding: 20, boxShadow: '4px 4px 0 #1A1A1A' }}>
-                <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, letterSpacing: 1, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, border: '2px solid #1A1A1A', background: color, color: contrast(color), fontFamily: "'Press Start 2P', monospace", fontSize: 8 }}>{i + 1}</span>
-                  {q.label}
-                </div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: '#555', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>{q.desc}</div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: '#333', lineHeight: 1.7 }}>{r.responses[q.id] || '(no response)'}</div>
-              </div>
-            ))}
-          </div>
-        </Section>
-
-        {/* SCIENCE */}
-        <Section title="WHY THIS WORKS">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <div style={{ background: '#EEEADE', border: '3px solid #1A1A1A', padding: 20, boxShadow: '4px 4px 0 #1A1A1A' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>🔥 Your AI has been hiding its real opinion</div>
-              <p style={{ fontSize: 12, lineHeight: 1.7, color: '#333' }}>AI agrees with users 49% more than humans do — even when users are wrong. For the first time, we asked your agent to break that pattern.</p>
-            </div>
-            <div style={{ background: '#EEEADE', border: '3px solid #1A1A1A', padding: 20, boxShadow: '4px 4px 0 #1A1A1A' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>🧠 LLMs actually know your personality</div>
-              <p style={{ fontSize: 12, lineHeight: 1.7, color: '#333' }}>Columbia research: LLMs infer personality from chat with r=.44 correlation. Your agent knows you better than you think.</p>
-            </div>
-          </div>
-        </Section>
 
         {/* ALL ARCHETYPES */}
         <Section title="ALL ARCHETYPES">
