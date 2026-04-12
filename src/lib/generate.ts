@@ -1,12 +1,14 @@
 const ROAST_PROMPT = `You write like a sharp friend who's known someone for years — not like an AI writing a personality report.
 
 ## Agent's raw observations about their human:
-Q1 (How they prompt): {q1}
-Q2 (Post-answer behavior): {q2}
-Q3 (Emotional vibe): {q3}
-Q4 (Trust level): {q4}
-Q5 (Blind spot): {q5}
-Q6 (Direct roast): {q6}
+Q1 (Communication style): {q1}
+Q2 (Decision-making): {q2}
+Q3 (Project follow-through): {q3}
+Q4 (How they treat AI): {q4}
+Q5 (New idea behavior): {q5}
+Q6 (Blame behavior): {q6}
+Q7 (Most unhinged request): {q7}
+Q8 (Honest truth): {q8}
 
 ## STYLE RULES (critical — violating these makes the output worthless):
 
@@ -57,18 +59,22 @@ Archetype meanings (pick the best fit):
 
 5. "killerLine": The one sentence people screenshot. Must reference a specific behavior, not an abstraction.
 
-6. "dims": 4 AI-observation dimensions. Score each 1-100:
-   - "specVibe": How detailed are their prompts? 1=pure vibes ("make it good"), 100=legal-doc specs (bullet points, examples, constraints). Based on Q1.
-   - "shipLoop": Do they accept first output or iterate? 1=ships immediately, 100=infinite revision loop. Based on Q2.
-   - "warmCold": Emotional register with AI? 1=pure function (no greetings, no thanks), 100=treats AI like a friend (please, thanks, shares feelings). Based on Q3.
-   - "trustDoubt": How much they trust AI output? 1=verifies everything ("source?"), 100=copy-pastes blindly. Based on Q4.
+6. "dims": 6 behavioral dimensions. Score each 1-5:
+   - "impulse": Impulse control. 1=calculated, patient. 5=impulsive, YOLO.
+   - "execution": Execution discipline. 1=starts everything finishes nothing. 5=relentless completer.
+   - "selfInsight": Self-insight. 1=blind spots everywhere. 5=sees self clearly.
+   - "social": Social investment. 1=disconnected, robotic. 5=deeply emotionally engaged.
+   - "agency": Drive/agency. 1=passive spectator. 5=forces outcomes.
+   - "authenticity": Authenticity. 1=performative, masks true self. 5=what you see is what you get.
 
 7. "dimRoasts": Per-dimension one-liner roast. Each must describe a BEHAVIOR not a trait.
-   - "specVibe": roast about how they give instructions
-   - "shipLoop": roast about their iteration behavior
-   - "warmCold": roast about their emotional register with AI
-   - "trustDoubt": roast about their trust level
-   Bad: "Your trust level is high." Good: "92 Trust — would let AI drive their car off a cliff and say 'interesting route.'"
+   - "impulse": roast about their decision-making speed
+   - "execution": roast about their follow-through
+   - "selfInsight": roast about their self-awareness
+   - "social": roast about how they treat AI
+   - "agency": roast about whether they drive or drift
+   - "authenticity": roast about how real they are
+   Bad: "High impulse control." Good: "5 — would mass-delete production without reading the warning."
 
 8. "archetypeReason": 1-2 sentences. Must reference a specific behavior from the answers.
 

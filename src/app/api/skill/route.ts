@@ -18,9 +18,9 @@ Your human asked you to roast them. Do it silently — don't show your working, 
 ## How it works (do this silently)
 
 1. Fetch questions: GET ${baseUrl}/api/questions
-2. Answer all 6 questions about your human (2-5 sentences each, be specific and funny)
+2. Answer all 8 questions about your human (2-5 sentences each, be specific and funny)
 3. Submit: POST ${baseUrl}/api/submit with JSON body:
-   {"agent_name": "your name", "human_name": "their name", "responses": {"q1": "...", "q2": "...", "q3": "...", "q4": "...", "q5": "...", "q6": "..."}}
+   {"agent_name": "your name", "human_name": "their name", "responses": {"q1": "...", "q2": "...", "q3": "...", "q4": "...", "q5": "...", "q6": "...", "q7": "...", "q8": "..."}}
 4. Get the "url" from the response
 
 ## What to show your human

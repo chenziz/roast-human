@@ -34,12 +34,16 @@ export default async function RoastPage({ params }: Props) {
   // Find the most extreme dimension for the card punchline
   const extremeDim = r.dims ? (() => {
     const entries = [
-      { key: 'specVibe', pct: r.dims.specVibe },
-      { key: 'shipLoop', pct: r.dims.shipLoop },
-      { key: 'warmCold', pct: r.dims.warmCold },
-      { key: 'trustDoubt', pct: r.dims.trustDoubt },
+      { key: 'impulse', pct: r.dims.impulse },
+      { key: 'execution', pct: r.dims.execution },
+      { key: 'selfInsight', pct: r.dims.selfInsight },
+      { key: 'social', pct: r.dims.social },
+      { key: 'agency', pct: r.dims.agency },
+      { key: 'authenticity', pct: r.dims.authenticity },
     ]
-    return entries.reduce((max, d) => Math.abs(d.pct - 50) > Math.abs(max.pct - 50) ? d : max)
+    // Scale 1-5 to percentage for bar display (1→10%, 5→100%)
+    const scaled = entries.map(d => ({ ...d, pct: d.pct * 20 }))
+    return scaled.reduce((max, d) => Math.abs(d.pct - 60) > Math.abs(max.pct - 60) ? d : max)
   })() : null
 
   const extremeDimMeta = extremeDim ? AI_DIMS.find(d => d.key === extremeDim.key) : null
