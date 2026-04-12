@@ -77,23 +77,28 @@ export default function Home() {
         </div>
       </div>
 
-      {/* How it works */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 40 }}>
-        <div style={{ background: '#EEEADE', border: '3px solid #1A1A1A', padding: 28, boxShadow: '4px 4px 0 #1A1A1A' }}>
-          <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 14 }}>
-            🔥 THE ROAST
-          </div>
-          <p style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>
-            Your AI agent answers 8 questions about you — how you communicate, how you handle projects, and what drives them crazy about working with you.
-          </p>
+      {/* The Science */}
+      <div style={{ marginBottom: 40 }}>
+        <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 11, letterSpacing: 1, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span>THE SCIENCE</span>
+          <div style={{ flex: 1, height: 1, background: '#1A1A1A' }} />
         </div>
-        <div style={{ background: '#EEEADE', border: '3px solid #1A1A1A', padding: 28, boxShadow: '4px 4px 0 #1A1A1A' }}>
-          <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 14 }}>
-            🤖 YOUR AGENT KNOWS
-          </div>
-          <p style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>
-            AI has been trained to agree with you. For the first time, we asked your agent to break that pattern and tell you what it actually thinks.
-          </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          {[
+            { title: 'AI Sycophancy', stat: '49% more agreement', desc: 'AI agrees with users 49% more than humans — even when wrong.', source: 'Cheng et al., Science 2026', url: 'https://www.science.org/doi/10.1126/science.aec8352' },
+            { title: 'Personality Inference', stat: 'r = .44 correlation', desc: 'LLMs infer Big Five personality from free-form chat.', source: 'Peters & Matz, Columbia 2024', url: 'https://arxiv.org/abs/2405.13052' },
+            { title: 'AI Disempowerment', stat: '1.5M conversations', desc: '3 patterns of human agency loss in AI interactions.', source: 'Anthropic Research 2026', url: 'https://arxiv.org/abs/2601.19062' },
+            { title: 'Metacognitive Disconnect', stat: '+3 performance, +4 overestimate', desc: 'AI improves output but users overestimate their own ability.', source: 'Fernandes et al. 2025', url: 'https://doi.org/10.1016/j.chb.2025.108779' },
+            { title: 'Problematic AI Use', stat: 'N = 864', desc: 'Low impulse control predicts AI dependency patterns.', source: 'Maral et al. 2025', url: 'https://doi.org/10.1007/s11469-025-01509-y' },
+            { title: 'AI Fluency Index', stat: '24 behaviors, 4 dimensions', desc: 'Framework for measuring human-AI interaction competency.', source: 'Anthropic Research 2026', url: 'https://www.anthropic.com/research/AI-fluency-index' },
+          ].map(paper => (
+            <a key={paper.title} href={paper.url} target="_blank" rel="noopener noreferrer" style={{ background: '#EEEADE', border: '2px solid #1A1A1A', padding: 16, boxShadow: '3px 3px 0 #1A1A1A', textDecoration: 'none', color: 'inherit' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, color: '#1A1A1A' }}>{paper.title}</div>
+              <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: '#2ced7a', marginBottom: 8 }}>{paper.stat}</div>
+              <div style={{ fontSize: 11, lineHeight: 1.5, color: '#555', marginBottom: 8 }}>{paper.desc}</div>
+              <div style={{ fontSize: 9, color: '#999' }}>{paper.source} →</div>
+            </a>
+          ))}
         </div>
       </div>
     </div>
