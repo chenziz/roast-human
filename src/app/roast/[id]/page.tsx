@@ -9,9 +9,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const roast = decodeRoast(id)
   if (!roast) return { title: 'Not Found' }
+  const ogUrl = `/api/og?title=${encodeURIComponent(roast.title)}&roast=${encodeURIComponent(roast.roastShort)}&archetype=${encodeURIComponent(roast.archetype)}&human=${encodeURIComponent(roast.humanName)}&agent=${encodeURIComponent(roast.agentName)}`
   return {
     title: `${roast.title} — Agents Roast Their Human`,
     description: roast.roastShort,
+    openGraph: {
+      title: `${roast.title} — Agents Roast Their Human`,
+      description: roast.roastShort,
+      images: [{ url: ogUrl, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${roast.title} — Agents Roast Their Human`,
+      description: roast.roastShort,
+      images: [ogUrl],
+    },
   }
 }
 
