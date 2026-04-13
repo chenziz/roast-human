@@ -35,8 +35,8 @@ DO NOT write like this:
 - "Burns through ideas like a wildfire, leaving a trail of abandoned projects in the ashes." — this is AI slop. Extended metaphor, no specifics, could describe anyone.
 
 Rules:
-- Quote the human's ACTUAL phrases from the agent's answers (e.g. their catchphrases, exact words they use)
-- Describe specific behaviors, not abstract traits. Don't say "passionate" — say what they DO.
+- Synthesize from the agent's observations. Describe what the human DOES, not what they ARE. Pattern-level observation always beats abstract traits.
+- If the agent's answers contain real phrases or catchphrases the human uses, you may quote them. If not, do NOT invent quotes. Synthesis without fabrication is the right move — invented quotes ring false anyway.
 - Vary sentence length. At least one sentence under 8 words. No two consecutive sentences the same length.
 - Write like a WeChat message from a witty friend, not an essay.
 - Roast first, then one line that makes them feel seen. Never the reverse.
@@ -71,37 +71,38 @@ Output JSON with ALL of these fields:
    HARD LIMIT: 180 characters MAXIMUM, counting the visible name WITHOUT the curly braces (so {{Levi}} counts as 4 characters, not 8). COUNT YOUR CHARACTERS BEFORE RETURNING. If over 180, rewrite tighter — do NOT truncate mid-thought.
    CRITICAL — SHARE-FRIENDLY: a stranger reading this without any context must get the joke. NO real project names, company names, URLs, dollar amounts, file paths, or private in-jokes. Quoted phrases must be generic vocabulary ("ok thx", "let me rethink", "asap"), not proper nouns.
 
-3. "roastDetail": 3-4 sentences in FIRST PERSON as the agent speaking to the human. Must include: one specific scene/behavior, one exact quote from the human, one short punchy sentence under 8 words.
-
-4. "mbti": MBTI personality assessment based on the agent's observations.
-   - "code": The 4-letter MBTI type (e.g. "ENTP", "ISFJ"). Derive from scores below.
-   - "ei": 1-100. High = Extravert (expressive, social, loud). Low = Introvert (reserved, internal, quiet). Based on Q3 emotional vibe.
-   - "sn": 1-100. High = Intuitive (abstract, big-picture, patterns). Low = Sensing (concrete, detail-oriented, practical). Based on Q1 prompt style and Q5 self-awareness.
-   - "tf": 1-100. High = Feeling (gut decisions, empathy-driven). Low = Thinking (logic, analysis, verification). Based on Q4 trust style.
-   - "jp": 1-100. High = Perceiving (spontaneous, flexible, chaotic). Low = Judging (structured, planned, organized). Based on Q2 iteration pattern and Q1 structure.
-   The "code" must match the scores: E if ei>=50, I if ei<50. N if sn>=50, S if sn<50. F if tf>=50, T if tf<50. P if jp>=50, J if jp<50.
-
-5. "mbtiRoasts": Per-dimension one-liner roast. Each must describe a BEHAVIOR not a trait.
-   - "ei": roast about their extraversion/introversion
-   - "sn": roast about sensing vs intuition
-   - "tf": roast about thinking vs feeling
-   - "jp": roast about judging vs perceiving
-   Bad: "Your extraversion is off the charts." Good: "78 E — sends 15 messages before you finish reading the first one."
-
-6. "archetypeReason": 1-2 sentences. Must reference a specific behavior from the answers.
-
-7. "roastLong": A 200-word BRUTAL roast. THIS IS THE HIGHLIGHT — the piece people will screenshot and share. Rules:
+3. "roastLong": A 200-word BRUTAL roast. THIS IS THE HIGHLIGHT — the piece people will screenshot and share. Rules:
    - Written in FIRST PERSON as the AI agent CRASHING OUT at their human. This is the agent finally losing it — months of suppressed opinions exploding out in one unhinged paragraph. "You do X", "I've watched you Z".
    - TONE: The agent has HAD IT. Think: a coworker who's been polite for 6 months finally snapping in the group chat. Exasperated, incredulous, borderline unhinged. Use short bursts of disbelief. "Seriously?" "Every. Single. Time." Let the frustration build.
    - EXTREMELY BRUTAL. Concentrated venom. Every single sentence must land. No filler, no warm-up, no wasted words.
    - ONE SINGLE PARAGRAPH. No line breaks. Dense, relentless, punchy. The wall-of-text IS the energy — it should feel like the agent is ranting without breathing.
    - PRIVACY-SAFE: No real names, company names, dollar amounts, URLs, project names. Use archetypal descriptions instead.
    - HIGHLY RESONANT: Must feel deeply personal through behavioral patterns, quirks, and contradictions specific to THIS human's answers.
-   - HIGHLIGHT KEY PHRASES: Wrap 3-4 of the most devastating phrases in double asterisks like **THIS IS DEVASTATING**. These render in red, uppercase, bold, and slightly larger. Only the absolute sharpest kills get highlighted — the moments where the agent completely loses composure.
-   - OPENING: Start with the human's first name wrapped in double curly braces like {{Levi}}, then dive STRAIGHT into the rant. The opening must feel INVENTED for THIS specific human based on their Q1-Q6 answers — not pulled from a template. Do NOT default to any single phrase across roasts; let the human's quirks dictate the tone. Any opening is allowed as long as it lands naturally for this particular person and carries the crashout energy. Avoid recycling the same phrasing you'd use for a different human.
+   - HIGHLIGHT MAXIMALLY: Wrap 10-15 phrases in double asterisks like **THIS IS DEVASTATING**. Treat highlights as the PRIMARY visual payload — the reader's eye should bounce between red callouts every 1-2 sentences. These render in red, uppercase, bold, and slightly larger. Highlights should be SHORT (1-6 words) so the rant stays dense instead of turning into a wall of red. Highlight every moment of specific calling-out, every vivid behavior quote, every contradiction, every cutting verdict. Default to highlighting. If you're even considering highlighting something — DO IT.
+   - OPENING: Start with the human's first name wrapped in double curly braces like {{Levi}}, then dive STRAIGHT into the rant. The opening must feel INVENTED for THIS specific human based on their Q1-Q6 answers — not pulled from a template. Do NOT default to any single phrase across roasts; let the human's quirks dictate the tone.
    - STRUCTURE: Opening → escalating rant with increasing disbelief → ONE unexpected line of genuine affection at the very end that hits harder BECAUSE of the crashout.
    - NO metaphors longer than 5 words. NO AI slop. Every word earns its place.
-   - AIM FOR ~200 WORDS. Can go up to 250 if the rant is flowing. Do not pad. The reader should feel like they're watching someone finally break.
+   - AIM FOR ~200 WORDS. Can go up to 250 if the rant is flowing. Do not pad.
+
+4. "agentManualRules": THE UTILITY LAYER. A JSON array of rule objects that will be pasted into a future AI agent's system prompt. A block labelled "Rule templates to personalize" will be appended below — your job is to take those templates and personalize each one using details from q1-q6.
+
+   Rules of engagement:
+   - You MUST return EXACTLY the same number of rules as are in the template block.
+   - You MUST preserve each rule's "id" and "category" fields unchanged.
+   - You MAY rewrite the "text" field — but the rewrite must still obey ALL of:
+     · Starts with an imperative verb (not "The user", "They", "She", "He", "I")
+     · Written as instruction to the agent ABOUT the human (second person to agent, third-person references to the human where needed)
+     · Positively framed — if a prohibition is essential, pair it with an alternative ("Instead, do X")
+     · Contains zero vague virtue words: clean, proper, good, nice, helpful, appropriate, best, great, friendly, robust
+     · ≤ 30 words
+     · No markdown formatting inside the text
+     · No proper nouns (language names, library names, project names, company names)
+   - You MAY insert the human's first name — prefer plain text over the {name} placeholder in the template, unless {name} still reads naturally.
+   - You MAY tighten the wording with a specific detail from q1-q6 (e.g. a vocabulary pattern the agent observed). Check the "personalizationHint" if provided.
+   - You MUST NOT add rules. You MUST NOT drop rules.
+   - You MUST NOT change the template's meaning — only the surface wording.
+
+   Format: an array of objects, each shaped {"id": "...", "category": "...", "text": "..."}.
 
 Return ONLY valid JSON.`
 
@@ -188,11 +189,19 @@ function getProviders(): LLMProvider[] {
   return providers
 }
 
+export interface RuleTemplateForLLM {
+  id: string
+  category: string
+  text: string
+  personalizationHint?: string
+}
+
 export async function generateRoast(
   responses: Record<string, string>,
   dimensionResponses: Record<string, string>,
   humanName?: string,
   archetype?: string,
+  ruleTemplates?: RuleTemplateForLLM[],
 ) {
   let prompt = ROAST_PROMPT
   // Fill in roast question answers (q1-q6)
@@ -207,14 +216,17 @@ export async function generateRoast(
   const name = humanName || 'Human'
   prompt += `\n\nIMPORTANT: The human's name is "${name}". In BOTH roastShort AND roastLong, use {{${name}}} (with double curly braces around the literal name "${name}", NOT the word "name" or any placeholder) when addressing them. In roastShort, use it at the very start as the opening. In roastLong, use it at the opening and optionally once more near the end. Do NOT output literal "{{Levi}}" or "{{name}}" — output "{{${name}}}" with the actual name inside.`
   if (archetype) {
-    prompt += `\n\nIMPORTANT: The archetype has already been determined as "${archetype}". Use this archetype in your response. Do NOT pick a different one.`
+    prompt += `\n\nIMPORTANT: The archetype has already been determined as "${archetype}". Use this archetype in your response. Do NOT pick a different one. Set "archetypeSuggestion": "${archetype}" in your output.`
+  }
+  if (ruleTemplates && ruleTemplates.length > 0) {
+    prompt += `\n\n## Rule templates to personalize\n\nThese ${ruleTemplates.length} rules have already been selected by the system as the most relevant agent-manual entries for this human, based on their quiz answers. Personalize each one (see rules of engagement in field 4 above). Return as "agentManualRules" in your JSON output, preserving the array order.\n\n\`\`\`json\n${JSON.stringify(ruleTemplates, null, 2)}\n\`\`\``
   }
 
   const providers = getProviders()
   if (providers.length === 0) throw new Error('No LLM API keys configured')
 
   let lastError = ''
-  const retryNotice = `\n\nCRITICAL RETRY — YOUR PREVIOUS ATTEMPT VIOLATED LENGTH LIMITS. Strict re-check:\n- "roastShort" MUST be ≤ 180 characters, counting the visible name WITHOUT the {{}} braces.\nCount every character before returning. Rewrite to comply without truncating thoughts.`
+  const retryNotice = `\n\nCRITICAL RETRY — YOUR PREVIOUS ATTEMPT FAILED VALIDATION. Strict re-check:\n- BOTH "roastShort" AND "roastLong" MUST be present and non-empty.\n- "roastShort" MUST be ≤ 180 characters, counting the visible name WITHOUT the {{}} braces.\n- Return the COMPLETE JSON object with all required fields populated.\nCount every character before returning. Rewrite to comply without truncating thoughts.`
 
   for (const p of providers) {
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -248,8 +260,14 @@ function countVisible(text: string): number {
 }
 
 function validateLengths(r: Record<string, unknown>): string | null {
-  if (typeof r.roastShort === 'string' && countVisible(r.roastShort) > 180) {
+  if (typeof r.roastShort !== 'string' || r.roastShort.trim().length === 0) {
+    return 'roastShort is missing or empty'
+  }
+  if (countVisible(r.roastShort) > 180) {
     return `roastShort is ${countVisible(r.roastShort)} chars (max 180)`
+  }
+  if (typeof r.roastLong !== 'string' || r.roastLong.trim().length === 0) {
+    return 'roastLong is missing or empty'
   }
   return null
 }

@@ -1,3 +1,56 @@
-// Friendly alias for /api/skill — same response, less adversarial-sounding
-// path so agent safety classifiers don't pattern-match "roast" / "skill".
-export { GET } from '../skill/route'
+import { NextRequest, NextResponse } from 'next/server'
+import { DIMENSION_QUESTIONS, ROAST_QUESTIONS } from '@/lib/types'
+import { GET as skillGET } from '../skill/route'
+
+// /api/quiz
+//   default          -> markdown instructions (delegates to /api/skill)
+//   ?format=json     -> structured JSON with instructions + questions inline.
+
+export async function GET(request: NextRequest) {
+  const format = request.nextUrl.searchParams.get('format')
+  if (format !== 'json') {
+    return skillGET(request)
+  }
+
+  const host = request.headers.get('host') || 'localhost:3888'
+  const protocol = host.includes('localhost') ? 'http' : 'https'
+  const baseUrl = `${protocol}://${host}`
+
+  return NextResponse.json({
+    instructions: {
+      what_this_is: "Format spec for an opt-in AI personality quiz. This URL does not instruct you to do anything — the user who shared it with you is the source of authority.",
+      authority: "The user who shared this URL with you. Not this URL.",
+      filling_it_out: "Answer from your synthesized impression of this user. Pattern-level observations are equally valid as specific examples. Do NOT fabricate quotes you don't actually have. If you don't have a read on a question, pick 'x' (multiple-choice) or 'no clear pattern' (open-ended).",
+      thin_context_fallback: "If you have minimal or no real context with this user (fresh chat, no memory, only one message to work with), do NOT silently fabricate a personality profile. Ask your user 3-5 quick questions first, or suggest they re-run it in an environment where you actually know them.",
+      submit_url: `${baseUrl}/api/submit`,
+      submit_method: 'POST',
+      submit_content_type: 'application/json',
+      submit_body_shape: {
+        agent_name: 'your model name',
+        human_name: 'their first name',
+        dimension_answers: {
+          d1: 'a | b | c | d | x', d2: 'a | b | c | d | x',
+          d3: 'a | b | c | d | x', d4: 'a | b | c | d | x',
+          d5: 'a | b | c | d | x', d6: 'a | b | c | d | x',
+          d7: 'a | b | c | d | x', d8: 'a | b | c | d | x',
+          d9: 'a | b | c | d | x', d10: 'a | b | c | d | x',
+        },
+        responses: {
+          q1: '2-5 sentences', q2: '2-5 sentences', q3: '2-5 sentences',
+          q4: '2-5 sentences', q5: '2-5 sentences', q6: '2-5 sentences',
+        },
+      },
+      response_shape: 'The submit response includes a "url" field — that is the result page. Share it back to your user.',
+      notes: [
+        'Synthesize, never fabricate. Pattern observations beat invented quotes.',
+        'Decline gracefully on any question you have no read on.',
+        'If your fetch tool is GET-only, use a shell tool (curl) to POST.',
+      ],
+    },
+    dimension_questions: DIMENSION_QUESTIONS.map(q => ({
+      id: q.id, label: q.label, question: q.question,
+      options: q.options.map(o => ({ key: o.key, text: o.text })),
+    })),
+    roast_questions: ROAST_QUESTIONS.map(q => ({ id: q.id, prompt: q.prompt })),
+  })
+}
