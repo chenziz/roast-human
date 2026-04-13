@@ -244,6 +244,10 @@ export async function generateRoast(
           lastError = `${p.name} attempt ${attempt + 1}: ${lengthError}`
           continue
         }
+        // Post-process: inject ** highlights if LLM didn't add enough
+        if (typeof parsed.roastLong === 'string') {
+          parsed.roastLong = ensureHighlights(parsed.roastLong)
+        }
         return parsed
       } catch (e) {
         lastError = `${p.name} attempt ${attempt + 1}: ${e instanceof Error ? e.message : String(e)}`
@@ -253,6 +257,49 @@ export async function generateRoast(
   }
 
   throw new Error(`All models failed. Last: ${lastError}`)
+}
+
+/**
+ * If roastLong has fewer than 3 highlights, auto-inject them on short punchy phrases.
+ * Targets: ALL-CAPS phrases, "Every. Single. Time." patterns, and short sharp clauses.
+ */
+function ensureHighlights(text: string): string {
+  const existing = (text.match(/\*\*[^*]+\*\*/g) || []).length
+  if (existing >= 3) return text
+
+  let result = text
+  // Pattern 1: phrases already in ALL CAPS (3+ chars) — wrap them
+  result = result.replace(/(?<!\*\*)\b([A-Z][A-Z\s]{2,30}[A-Z])\b(?!\*\*)/g, (match) => {
+    // Skip if it's a name placeholder like {{DANNY}}
+    if (match.includes('{{') || match.includes('}}')) return match
+    return `**${match}**`
+  })
+
+  // Check count again
+  const after1 = (result.match(/\*\*[^*]+\*\*/g) || []).length
+  if (after1 >= 3) return result
+
+  // Pattern 2: "Every. Single. Time." style emphatic fragments
+  result = result.replace(/(?<!\*\*)(\w+\.\s\w+\.\s\w+\.)(?!\*\*)/g, '**$1**')
+
+  // Pattern 3: short sharp clauses after periods (2-5 words ending in period)
+  const after2 = (result.match(/\*\*[^*]+\*\*/g) || []).length
+  if (after2 < 3) {
+    // Last resort: highlight the first 3 sentences that are under 8 words
+    const sentences = result.split(/(?<=\.)\s+/)
+    let added = after2
+    for (let i = 0; i < sentences.length && added < 4; i++) {
+      const s = sentences[i]
+      const words = s.split(/\s+/).length
+      if (words >= 2 && words <= 7 && !s.includes('**') && !s.startsWith('{{')) {
+        sentences[i] = `**${s.replace(/\.$/, '')}**.`
+        added++
+      }
+    }
+    result = sentences.join(' ')
+  }
+
+  return result
 }
 
 function countVisible(text: string): number {
@@ -269,10 +316,7 @@ function validateLengths(r: Record<string, unknown>): string | null {
   if (typeof r.roastLong !== 'string' || r.roastLong.trim().length === 0) {
     return 'roastLong is missing or empty'
   }
-  // Enforce ** highlight markers in roastLong (min 3, soft — only triggers one retry)
-  const highlightCount = ((r.roastLong as string).match(/\*\*[^*]+\*\*/g) || []).length
-  if (highlightCount < 3) {
-    return `roastLong has only ${highlightCount} highlights (need at least 3 phrases wrapped in **double asterisks**)`
-  }
+  // Note: ** highlight count is checked post-hoc, not as validation.
+  // If LLM doesn't add highlights, we inject them in post-processing.
   return null
 }
