@@ -5,7 +5,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { DownloadButton } from './DownloadButton'
 import { CopyButton } from './CopyButton'
-import { GatedManual } from './GatedManual'
 import { ShareButton } from './ShareButton'
 
 interface Props { params: Promise<{ id: string }> }
@@ -309,12 +308,8 @@ export default async function RoastPage({ params }: Props) {
           <div style={{ flex: 1, height: 2, background: '#1A1A1A' }} />
         </div>
 
-        {/* ═══ MANUAL SECTION (gated) ═══ */}
+        {/* ═══ MANUAL SECTION ═══ */}
         <Section title="YOUR AI'S USER MANUAL">
-          <GatedManual
-            roastId={r.id}
-            shareText={heroShareText}
-          >
             {/* Hero block: the actual manual */}
             {r.agentManual && (
               <div style={{ background: '#181818', border: '3px solid #1A1A1A', borderRadius: 10, padding: '28px 32px', boxShadow: '4px 4px 0 #1A1A1A', marginBottom: 24 }}>
@@ -350,7 +345,6 @@ export default async function RoastPage({ params }: Props) {
                 </div>
               )
             })()}
-          </GatedManual>
         </Section>
 
         {/* A NOTE FROM THE CREATORS */}
