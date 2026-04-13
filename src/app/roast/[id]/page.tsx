@@ -2,6 +2,7 @@ import { decodeRoast } from '@/lib/store'
 import { ARCHETYPES, AI_DIMS } from '@/lib/types'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ShareButton } from './share'
 
 interface Props { params: Promise<{ id: string }> }
 
@@ -113,11 +114,7 @@ export default async function RoastPage({ params }: Props) {
         </div>
 
         {/* Actions */}
-        <div style={{ width: 460, maxWidth: '100%', marginTop: 16, display: 'flex', gap: 10 }}>
-          <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`My AI agent says I'm ${r.title} 🔥\n\n"${r.killerLine}"\n\nFind out how your agent sees you`)}`} target="_blank" style={{ flex: 1, textAlign: 'center', border: '3px solid #1A1A1A', padding: '14px 20px', fontSize: 14, fontWeight: 600, cursor: 'pointer', background: '#EEEADE', color: '#1A1A1A', boxShadow: '4px 4px 0 #1A1A1A', textDecoration: 'none', fontFamily: "'IBM Plex Mono', monospace" }}>
-            Share on 𝕏
-          </a>
-        </div>
+        <ShareButton title={r.title} killerLine={r.killerLine} />
 
         <div style={{ textAlign: 'center', marginTop: 30, fontSize: 12, color: '#999' }}>Full roast below ↓</div>
         <div style={{ height: 1, width: 120, margin: '32px auto', background: 'linear-gradient(to right, transparent, #2ced7a, transparent)', opacity: 0.3 }} />
