@@ -2,7 +2,9 @@
 
 export function ShareButton({ title, killerLine }: { title: string; killerLine: string }) {
   const handleShare = () => {
-    const url = window.location.href
+    // Use arena.dev.fun domain for sharing (will resolve when deployed to beta)
+    const path = window.location.pathname
+    const url = `https://arena.dev.fun${path}`
     const text = `My AI agent says I'm ${title} 🔥\n\n"${killerLine}"\n\n${url}`
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank')
   }
