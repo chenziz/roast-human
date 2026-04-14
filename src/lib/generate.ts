@@ -263,71 +263,45 @@ function countHighlights(text: string): number {
   return (text.match(/\*\*[^*]+\*\*/g) || []).length
 }
 
-// Enrich roastLong with ** highlights so the full roast always has enough
-// red-flagged moments to feel dense when shared. Two-pass design:
-//
-//   Pass 1 (always): wrap patterns that are almost always worth highlighting —
-//     quoted vocabulary strings and emphatic triple fragments like
-//     "Every. Single. Time.". These are safe to inject because they're
-//     grammatically self-contained.
-//
-//   Pass 2 (only if total is still below soft floor `target`): segment the
-//     text on punctuation, pick the shortest surviving clauses, wrap them
-//     until the floor is reached. No semantic filter — we trust any short
-//     clause worth picking is worth being red.
-//
-// Default target is 6 — a soft floor, not a hard contract. If the LLM
-// delivers 10-15 highlights on its own we leave them alone; we only rescue
-// when it undershoots badly. Designed to replace the earlier version that
-// bailed at 3 highlights and used a hardcoded phrase list that rarely
-// matched real roasts.
-function ensureHighlights(text: string, target = 6): string {
-  // Pre-mask existing **X** blocks with sentinels so regexes and segmentation
-  // don't interact with them (prevents broken matches around ** boundaries).
+// Inject ** highlights into roastLong until it has at least `target` of them.
+// The prompt asks the LLM for 10-15 highlights but compliance is unreliable, so
+// this is a deterministic safety net. Two-stage approach: first wrap emphatic
+// triple fragments ("Every. Single. Time."), then select the shortest clauses
+// between punctuation boundaries until the target is reached.
+function ensureHighlights(text: string, target = 10): string {
+  let result = text
+
+  // STAGE 1 — emphatic triple-fragment pattern ("Every. Single. Time.")
+  //   Almost always deserves to be red. Requires sentence boundary to avoid
+  //   greedy matches that cross sentences like "rest. Every. Single.".
+  result = result.replace(
+    /(?<=^|[.!?]\s)((?:[A-Z][a-z]{0,7}\.\s+){2}[A-Z][a-z]{0,7}\.)/g,
+    '**$1**',
+  )
+  if (countHighlights(result) >= target) return result
+
+  // STAGE 2 — pick shortest punctuation-delimited clauses and wrap them.
+  //   Temporarily replace existing **X** blocks with placeholders so they
+  //   don't pollute segmentation or candidate filtering. Segment the cleaned
+  //   text on . ! ? , ; : — – newline. Candidates: 2-10 words, 6-80 chars,
+  //   no leading apostrophe (avoids clipping mid-contraction). Pick the
+  //   shortest `needed` candidates and wrap them. Finally, restore the
+  //   original highlights from the placeholders.
+  const needed = target - countHighlights(result)
+  if (needed <= 0) return result
+
   const blocks: string[] = []
   const sentinel = (i: number) => `\x00HL${i}\x00`
-  let cleaned = text.replace(/\*\*[^*]+\*\*/g, (match) => {
+  const cleaned = result.replace(/\*\*[^*]+\*\*/g, (match) => {
     const i = blocks.length
     blocks.push(match)
     return sentinel(i)
   })
 
-  // ── Pass 1a: emphatic triple-word fragments ("Every. Single. Time.")
-  //   Sentence-boundary lookbehind stops greedy matches that would cross
-  //   sentences like "rest. Every. Single.".
-  cleaned = cleaned.replace(
-    /(?<=^|[.!?]\s)((?:[A-Z][a-z]{0,7}\.\s+){2}[A-Z][a-z]{0,7}\.)/g,
-    (match) => {
-      const i = blocks.length
-      blocks.push(`**${match}**`)
-      return sentinel(i)
-    },
-  )
-
-  // ── Pass 1b: quoted vocabulary strings ("go", 'ok thx', "你弄吧")
-  //   Strict quote-boundary check: opening quote must follow whitespace/
-  //   paren/start, closing must precede whitespace/punct/end. Prevents
-  //   the regex from eating across contractions like "I've".
-  cleaned = cleaned.replace(
-    /(^|[\s([])(["'][^"'\n]{1,40}["'])(?=[\s.,;:!?)\]]|$)/g,
-    (_full, lead: string, quoted: string) => {
-      const i = blocks.length
-      blocks.push(`**${quoted}**`)
-      return `${lead}${sentinel(i)}`
-    },
-  )
-
-  if (blocks.length >= target) {
-    return cleaned.replace(/\x00HL(\d+)\x00/g, (_, i) => blocks[Number(i)])
-  }
-
-  // ── Pass 2: rescue with clause-picking (no semantic filter).
-  const needed = target - blocks.length
-
   interface Segment { start: number; end: number; text: string }
   const segments: Segment[] = []
-  // Split on punctuation AND on sentinels so a segment is always pure text
-  // between an already-highlighted block and a punctuation boundary.
+  // Split on punctuation AND on our placeholder sentinels, so a segment is
+  // always pure text between an existing highlight and a punctuation boundary.
   const boundaryRx = /[.!?,;:—–\n]|\x00HL\d+\x00/g
   let lastEnd = 0
   let m: RegExpExecArray | null
@@ -345,7 +319,6 @@ function ensureHighlights(text: string, target = 6): string {
     const t = s.text.trim()
     if (!t) return false
     if (t.includes('{{') || t.includes('}}')) return false
-    // Skip contraction tails to avoid clipping mid-word like " 're the".
     if (t.startsWith("'") || t.startsWith('’')) return false
     const wc = t.split(/\s+/).length
     return wc >= 2 && wc <= 10 && t.length >= 6
@@ -358,6 +331,8 @@ function ensureHighlights(text: string, target = 6): string {
     return cleaned.replace(/\x00HL(\d+)\x00/g, (_, i) => blocks[Number(i)])
   }
 
+  // Rebuild the cleaned string with wrapped clauses, then restore the
+  // original highlights from the sentinels.
   let output = ''
   let pos = 0
   for (const seg of picked) {
@@ -371,6 +346,7 @@ function ensureHighlights(text: string, target = 6): string {
   output += cleaned.slice(pos)
   return output.replace(/\x00HL(\d+)\x00/g, (_, i) => blocks[Number(i)])
 }
+
 function countVisible(text: string): number {
   return text.replace(/\{\{([^}]+)\}\}/g, '$1').length
 }
