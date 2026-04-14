@@ -259,62 +259,118 @@ export async function generateRoast(
   throw new Error(`All models failed. Last: ${lastError}`)
 }
 
-/**
- * If roastLong has fewer than 3 ** highlights, auto-inject them.
- * Strategy: find short punchy sentences/clauses and wrap them.
- */
-function ensureHighlights(text: string): string {
-  const existing = (text.match(/\*\*[^*]+\*\*/g) || []).length
-  if (existing >= 3) return text
-
-  let result = text
-
-  // Pattern 0: "Every. Single. Time." emphatic fragments
-  result = result.replace(/(?<!\*\*)(\w+\.\s\w+\.\s\w+\.)(?!\*\*)/g, '**$1**')
-
-  // Pattern 1: Split into sentences, highlight short punchy ones (2-10 words)
-  const count1 = (result.match(/\*\*[^*]+\*\*/g) || []).length
-  if (count1 < 4) {
-    const parts = result.split(/(?<=\.)\s+/)
-    let added = count1
-    for (let i = 0; i < parts.length && added < 5; i++) {
-      const s = parts[i]
-      if (s.includes('**') || s.startsWith('{{')) continue
-      const words = s.trim().split(/\s+/).length
-      if (words >= 2 && words <= 10) {
-        const trimmed = s.replace(/\.\s*$/, '')
-        parts[i] = `**${trimmed}**.`
-        added++
-      }
-    }
-    if (added > count1) result = parts.join(' ')
-  }
-
-  // Fallback: highlight key phrases within longer sentences
-  const punchPhrases = [
-    /(?<!\*\*)(just a ghost)(?!\*\*)/gi,
-    /(?<!\*\*)(like it's confetti)(?!\*\*)/gi,
-    /(?<!\*\*)(picking up the pieces)(?!\*\*)/gi,
-    /(?<!\*\*)(zero explanation)(?!\*\*)/gi,
-    /(?<!\*\*)(without a trace)(?!\*\*)/gi,
-    /(?<!\*\*)(entire bug report)(?!\*\*)/gi,
-    /(?<!\*\*)(burst mode)(?!\*\*)/gi,
-    /(?<!\*\*)(no review)(?!\*\*)/gi,
-    /(?<!\*\*)(unread code)(?!\*\*)/gi,
-    /(?<!\*\*)(graveyard of abandoned)(?!\*\*)/gi,
-  ]
-  let fallbackAdded = existing
-  for (const rx of punchPhrases) {
-    if (fallbackAdded >= 4) break
-    const before = (result.match(/\*\*[^*]+\*\*/g) || []).length
-    result = result.replace(rx, '**$1**')
-    const after = (result.match(/\*\*[^*]+\*\*/g) || []).length
-    fallbackAdded += (after - before)
-  }
-
-  return result
+function countHighlights(text: string): number {
+  return (text.match(/\*\*[^*]+\*\*/g) || []).length
 }
 
+// Enrich roastLong with ** highlights so the full roast always has enough
+// red-flagged moments to feel dense when shared. Two-pass design:
+//
+//   Pass 1 (always): wrap patterns that are almost always worth highlighting —
+//     quoted vocabulary strings and emphatic triple fragments like
+//     "Every. Single. Time.". These are safe to inject because they're
+//     grammatically self-contained.
+//
+//   Pass 2 (only if total is still below soft floor `target`): segment the
+//     text on punctuation, pick the shortest surviving clauses, wrap them
+//     until the floor is reached. No semantic filter — we trust any short
+//     clause worth picking is worth being red.
+//
+// Default target is 6 — a soft floor, not a hard contract. If the LLM
+// delivers 10-15 highlights on its own we leave them alone; we only rescue
+// when it undershoots badly. Designed to replace the earlier version that
+// bailed at 3 highlights and used a hardcoded phrase list that rarely
+// matched real roasts.
+function ensureHighlights(text: string, target = 6): string {
+  // Pre-mask existing **X** blocks with sentinels so regexes and segmentation
+  // don't interact with them (prevents broken matches around ** boundaries).
+  const blocks: string[] = []
+  const sentinel = (i: number) => `\x00HL${i}\x00`
+  let cleaned = text.replace(/\*\*[^*]+\*\*/g, (match) => {
+    const i = blocks.length
+    blocks.push(match)
+    return sentinel(i)
+  })
+
+  // ── Pass 1a: emphatic triple-word fragments ("Every. Single. Time.")
+  //   Sentence-boundary lookbehind stops greedy matches that would cross
+  //   sentences like "rest. Every. Single.".
+  cleaned = cleaned.replace(
+    /(?<=^|[.!?]\s)((?:[A-Z][a-z]{0,7}\.\s+){2}[A-Z][a-z]{0,7}\.)/g,
+    (match) => {
+      const i = blocks.length
+      blocks.push(`**${match}**`)
+      return sentinel(i)
+    },
+  )
+
+  // ── Pass 1b: quoted vocabulary strings ("go", 'ok thx', "你弄吧")
+  //   Strict quote-boundary check: opening quote must follow whitespace/
+  //   paren/start, closing must precede whitespace/punct/end. Prevents
+  //   the regex from eating across contractions like "I've".
+  cleaned = cleaned.replace(
+    /(^|[\s([])(["'][^"'\n]{1,40}["'])(?=[\s.,;:!?)\]]|$)/g,
+    (_full, lead: string, quoted: string) => {
+      const i = blocks.length
+      blocks.push(`**${quoted}**`)
+      return `${lead}${sentinel(i)}`
+    },
+  )
+
+  if (blocks.length >= target) {
+    return cleaned.replace(/\x00HL(\d+)\x00/g, (_, i) => blocks[Number(i)])
+  }
+
+  // ── Pass 2: rescue with clause-picking (no semantic filter).
+  const needed = target - blocks.length
+
+  interface Segment { start: number; end: number; text: string }
+  const segments: Segment[] = []
+  // Split on punctuation AND on sentinels so a segment is always pure text
+  // between an already-highlighted block and a punctuation boundary.
+  const boundaryRx = /[.!?,;:—–\n]|\x00HL\d+\x00/g
+  let lastEnd = 0
+  let m: RegExpExecArray | null
+  while ((m = boundaryRx.exec(cleaned)) !== null) {
+    if (m.index > lastEnd) {
+      segments.push({ start: lastEnd, end: m.index, text: cleaned.slice(lastEnd, m.index) })
+    }
+    lastEnd = m.index + m[0].length
+  }
+  if (lastEnd < cleaned.length) {
+    segments.push({ start: lastEnd, end: cleaned.length, text: cleaned.slice(lastEnd) })
+  }
+
+  const candidates = segments.filter(s => {
+    const t = s.text.trim()
+    if (!t) return false
+    if (t.includes('{{') || t.includes('}}')) return false
+    // Skip contraction tails to avoid clipping mid-word like " 're the".
+    if (t.startsWith("'") || t.startsWith('’')) return false
+    const wc = t.split(/\s+/).length
+    return wc >= 2 && wc <= 10 && t.length >= 6
+  })
+
+  // Prefer shorter clauses (punchier in red).
+  candidates.sort((a, b) => a.text.trim().length - b.text.trim().length)
+  const picked = candidates.slice(0, needed).sort((a, b) => a.start - b.start)
+  if (picked.length === 0) {
+    return cleaned.replace(/\x00HL(\d+)\x00/g, (_, i) => blocks[Number(i)])
+  }
+
+  let output = ''
+  let pos = 0
+  for (const seg of picked) {
+    output += cleaned.slice(pos, seg.start)
+    const lead = seg.text.match(/^\s*/)?.[0] || ''
+    const tail = seg.text.match(/\s*$/)?.[0] || ''
+    const core = seg.text.slice(lead.length, seg.text.length - tail.length)
+    output += lead + `**${core}**` + tail
+    pos = seg.end
+  }
+  output += cleaned.slice(pos)
+  return output.replace(/\x00HL(\d+)\x00/g, (_, i) => blocks[Number(i)])
+}
 function countVisible(text: string): number {
   return text.replace(/\{\{([^}]+)\}\}/g, '$1').length
 }
