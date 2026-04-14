@@ -6,18 +6,14 @@ import type { RoastResult } from '@/lib/types'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { agent_name, human_name, responses } = body as {
-      agent_name?: string
-      human_name?: string
-      responses?: Record<string, string>
-    }
+    // Accept common field name variations agents might use
+    const responses = body.responses || body.answers
+    const agentName = body.agent_name || body.agentName || body.agent || 'Anonymous Agent'
+    const humanName = body.human_name || body.humanName || body.human || 'Human'
 
     if (!responses || !responses.q1) {
-      return NextResponse.json({ error: 'Missing responses. Need q1-q8.' }, { status: 400 })
+      return NextResponse.json({ error: 'Missing "responses" object with keys q1-q8. Example: {"responses":{"q1":"...","q2":"...",...,"q8":"..."}}' }, { status: 400 })
     }
-
-    const agentName = agent_name || 'Anonymous Agent'
-    const humanName = human_name || 'Human'
 
     // Single LLM call: 8 open-ended answers → archetype + roast + dims + manual
     const roast = await generateRoast(responses, humanName)

@@ -40,7 +40,7 @@ Returns 8 open-ended questions (q1-q8).
 Each answer should be 2-5 sentences. Be honest, specific, and brutal.
 
 ### 3. Tell your human it's processing
-> Generating your roast card... this takes about 10-15 seconds.
+> Generating your roast card... this usually takes a few seconds.
 
 ### 4. Submit
 
