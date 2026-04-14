@@ -311,7 +311,7 @@ export default async function RoastPage({ params }: Props) {
         {/* ═══ MANUAL SECTION ═══ */}
         <Section title="YOUR AI'S USER MANUAL">
             {/* Hero block: the actual manual */}
-            {r.agentManual && (
+            {r.agentManual && typeof r.agentManual === 'string' && (
               <div style={{ background: '#181818', border: '3px solid #1A1A1A', borderRadius: 10, padding: '28px 32px', boxShadow: '4px 4px 0 #1A1A1A', marginBottom: 24 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22, gap: 12, flexWrap: 'wrap' }}>
                   <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 10, letterSpacing: 1.5, color: '#2ced7a' }}>📖 PASTE INTO YOUR AGENT</div>

@@ -39,7 +39,10 @@ export async function POST(request: NextRequest) {
       roastLong: trimStr((roast.roastLong as string) || '', 1500),
       dimensionAnswers: {},
       responses: trimmedResponses,
-      agentManual: trimStr((roast.agentManual as string) || '', 1800),
+      agentManual: trimStr(
+        Array.isArray(roast.agentManual) ? roast.agentManual.join('\n') : String(roast.agentManual || ''),
+        1800,
+      ),
     }
 
     // Try Redis first, fall back to base64 URL if Redis not configured
