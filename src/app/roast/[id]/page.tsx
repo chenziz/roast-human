@@ -326,7 +326,7 @@ export default async function RoastPage({ params }: Props) {
 
             {/* Workflow tips */}
             {(() => {
-              const tips = selectTips(r.dimensionAnswers, 4)
+              const tips = selectTips(r.dimensionAnswers || {}, 4)
               if (tips.length === 0) return null
               return (
                 <div style={{ background: '#EEEADE', border: '3px solid #1A1A1A', borderRadius: 10, padding: '24px 28px', boxShadow: '4px 4px 0 #1A1A1A' }}>
