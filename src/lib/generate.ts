@@ -61,11 +61,49 @@ Rules:
    - PRIVACY-SAFE: No real names, company names, URLs, project names.
    - AIM FOR ~200 WORDS.
 
-4. "agentManual": A markdown block the user can paste into their agent's system prompt. Format:
+4. "agentManual": A markdown block the human will paste into a future AI agent's system prompt. This is THE UTILITY LAYER — a concrete, battle-tested operating manual for working with THIS specific human, derived directly from the Q1-Q8 evidence.
+
+   FORMAT (output as ONE single markdown STRING, not an array of lines):
+   \`\`\`
    # Working with {name}
-   ## Category
-   - Rule in imperative form (e.g. "Lead every response with the answer in one sentence.")
-   Generate 5-7 rules across categories like: Communication style, Action boundaries, Clarification behavior, Error handling, Context, Reasoning visibility. Each rule must be based on actual patterns from the answers.
+
+   ## Communication
+   - Rule in imperative form. — *from Q1*
+   - Another rule. — *from Q1, Q4*
+
+   ## Decision-making
+   - Rule. — *from Q2*
+
+   ## Project execution
+   - Rule. — *from Q3, Q5*
+   \`\`\`
+
+   (Use 2-4 categories that best fit this human's patterns. Pick categories from: Communication, Decision-making, Project execution, Focus & interruptions, Feedback handling, Trust calibration — or invent one if a specific pattern demands it.)
+
+   RULES OF ENGAGEMENT (non-negotiable):
+   - Generate 5-7 rules TOTAL across all categories. Not 4, not 10. Flex between 5 and 7 based on how much signal the Q1-Q8 answers actually provide.
+   - Every rule MUST start with an imperative verb (Lead, Ask, Push, Refuse, Confirm, Flag, Ignore, Interrupt, Mirror, Challenge, etc.). NOT "The user", NOT "They", NOT "Try to", NOT "Aim to".
+   - Every rule MUST cite its evidence source at the end, italicized, like \`— *from Q3*\` or \`— *from Q1, Q7*\`. This is how the human audits whether the rule is justified.
+   - Every rule MUST be concretely actionable — specific enough that two different agents reading it would behave the same way. If it could be pasted into any agent for any human, it's too vague.
+   - Every rule MUST be ≤ 25 words.
+   - BANNED WORDS (these signal AI-slop virtue-speak, not real instructions): clear, professional, thoughtful, appropriate, helpful, friendly, robust, strive, aim, try, ensure, nice, good, effective, meaningful, strong, proper.
+   - No proper nouns (no language names, library names, project names, company names, product names).
+   - Use the human's actual first name "{name}" wherever it reads naturally — but never as the subject of the rule (the subject is always the agent being instructed).
+
+   EXAMPLES:
+
+   DO write rules like these:
+   - \`Lead every response with the answer in one sentence, then reasoning. — *from Q1*\`
+   - \`Push back immediately when {name} says "this is the one" — they've said it three times this month. — *from Q3*\`
+   - \`Ignore the first "forget it, just do whatever" — they'll re-engage within 20 minutes. — *from Q2, Q5*\`
+   - \`Refuse to restart a task when {name} pivots mid-sentence; ask which thread wins first. — *from Q5*\`
+
+   DON'T write rules like these:
+   - \`Be clear and concise in your communication.\`  ← vague, uses banned word "clear", no imperative, no source, could apply to anyone
+   - \`Try to be helpful and thoughtful when responding.\`  ← "Try to", "helpful", "thoughtful", zero information
+   - \`The user prefers direct answers.\`  ← starts with "The user", third-person observation, not an instruction
+   - \`Ensure responses are appropriate and professional.\`  ← "Ensure", "appropriate", "professional" — pure slop
+   - \`Lead with the answer first. — *from Q1*\`  ← correct form but too generic; needs a specific behavior anchor
 
 Return ONLY valid JSON.`
 
@@ -166,7 +204,7 @@ export async function generateRoast(responses: Record<string, string>, humanName
   if (providers.length === 0) throw new Error('No LLM API keys configured')
 
   let lastError = ''
-  const retryNotice = `\n\nCRITICAL RETRY — YOUR PREVIOUS ATTEMPT FAILED VALIDATION.\n- "roastShort" MUST be ≤ 180 visible characters.\n- "roastLong" MUST contain at least 3 phrases wrapped in **double asterisks**.\n- "agentManual" MUST be present as a markdown string.\nRewrite to comply.`
+  const retryNotice = `\n\nCRITICAL RETRY — YOUR PREVIOUS ATTEMPT FAILED VALIDATION.\n- "roastShort" MUST be ≤ 180 visible characters.\n- "roastLong" MUST contain at least 3 phrases wrapped in **double asterisks**.\n- "agentManual" MUST be a single markdown STRING (not an array of lines) containing 5-7 rules total. Every rule starts with an imperative verb (Lead/Ask/Push/Refuse/Flag/Ignore/Interrupt/Mirror/Challenge), cites its source like — *from Q3*, is ≤ 25 words, and uses NONE of the banned virtue words (clear, professional, thoughtful, appropriate, helpful, friendly, robust, strive, aim, try, ensure, nice, good, effective, meaningful, strong, proper).\nRewrite to comply.`
 
   for (const p of providers) {
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -212,6 +250,14 @@ function validateOutput(r: Record<string, unknown>): string | null {
   }
   if (typeof r.roastLong !== 'string' || r.roastLong.trim().length === 0) {
     return 'roastLong is missing or empty'
+  }
+  // agentManual must be a non-empty string. If the LLM returns an array of
+  // lines (happens under response_format: json_object), the submit route has
+  // a defensive join() — but we'd rather catch it here and retry with the
+  // explicit "single markdown STRING, not an array" reminder than ship a
+  // fragile join. Empty/missing manuals force a retry too.
+  if (typeof r.agentManual !== 'string' || r.agentManual.trim().length === 0) {
+    return 'agentManual is missing, empty, or not a string'
   }
   return null
 }
